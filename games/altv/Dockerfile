@@ -3,7 +3,7 @@
 # ----------------------------------
 FROM    --platform=$TARGETOS/$TARGETARCH node:16-bookworm
 
-LABEL   author="goover" maintainer="lezetho@hypernet.org.uk"
+LABEL   author="goover" maintainer="luke@embotic.xyz"
 
 ENV     DEBIAN_FRONTEND noninteractive
 
