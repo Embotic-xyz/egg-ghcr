@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         tag:
-          - Hypernettron
+          - embotic
           - red
           - sinusbot
           - bastion

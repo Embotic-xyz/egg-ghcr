@@ -2,7 +2,7 @@ FROM        ghcr.io/embotic-xyz/egg-ghcr:debian
 
 LABEL       author="Manuel Dielacher" maintainer="th3dilli@gmx.at"
 
-LABEL       org.opencontainers.image.source="https://github.com/hypernet-org.uk/embotic-xyz"
+LABEL       org.opencontainers.image.source="https://github.com/Embotic-xyz/embotic-xyz"
 LABEL       org.opencontainers.image.licenses=MIT
 
 RUN			dpkg --add-architecture i386 \
