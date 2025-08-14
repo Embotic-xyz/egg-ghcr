@@ -10,16 +10,21 @@ RUN         apt update \
             && rm -rf /usr/bin/truncate \
             && rm -rf /usr/bin/xfs_mkfile
 
-RUN         npm install npm@latest typescript ts-node @types/node --location=global
+# Update npm and global tools before switching user
+RUN         npm install -g npm@latest typescript ts-node @types/node \
+            && npm config set update-notifier false
+
+# Prevent npm from showing update warnings at runtime
+ENV         NPM_CONFIG_UPDATE_NOTIFIER=false
 
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-
-STOPSIGNAL SIGINT
+STOPSIGNAL  SIGINT
 
 COPY        --chown=container:container ./../entrypoint.sh /entrypoint.sh
 RUN         chmod +x /entrypoint.sh
-ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+
+ENTRYPOINT  ["/usr/bin/tini", "-g", "--"]
 CMD         ["/entrypoint.sh"]
