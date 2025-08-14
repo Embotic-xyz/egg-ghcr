@@ -1,33 +1,17 @@
-FROM        --platform=$TARGETOS/$TARGETARCH eclipse-temurin:21-jdk-jammy
+FROM        --platform=$TARGETOS/$TARGETARCH node:21-bookworm-slim
 
 LABEL       author="Embotic" maintainer="luke@embotic.xyz"
 
-LABEL       org.opencontainers.image.source="https://github.com/Embotic-xyz/embotic-xyz"
-LABEL       org.opencontainers.image.licenses=MIT
+RUN         apt update \
+            && apt -y install ffmpeg iproute2 git sqlite3 libsqlite3-dev python3 python3-dev ca-certificates dnsutils tzdata zip tar curl build-essential libtool iputils-ping libnss3 tini \
+            && useradd -m -d /home/container container \
+            && rm -rf /usr/bin/dd \
+            && rm -rf /usr/bin/fallocate \
+            && rm -rf /usr/bin/truncate \
+            && rm -rf /usr/bin/xfs_mkfile
 
-RUN         apt update -y \
-            && apt install -y \
-                curl \
-                lsof \
-                ca-certificates \
-                openssl \
-                git \
-                tar \
-                sqlite3 \
-                fontconfig \
-                tzdata \
-                iproute2 \
-                libfreetype6 \
-                tini \
-				zip \
-				unzip \
-                && rm -rf /usr/bin/dd \
-                && rm -rf /usr/bin/fallocate \
-                && rm -rf /usr/bin/truncate \
-                && rm -rf /usr/bin/xfs_mkfile
+RUN         npm install npm@latest typescript ts-node @types/node --location=global
 
-## Setup user and working directory
-RUN         useradd -m -d /home/container -s /bin/bash container
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
