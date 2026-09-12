@@ -2,12 +2,12 @@ FROM        --platform=$TARGETOS/$TARGETARCH node:12-bullseye-slim
 
 LABEL       author="Embotic" maintainer="luke@embotic.xyz"
 
-# Set apt to retry on transient errors
-RUN         echo 'Apt::Retries "3";' > /etc/apt/apt.conf.d/99-retries && \
-            echo 'Apt::Get::AllowUnauthenticated "true";' > /etc/apt/apt.conf.d/99-allow-unauthenticated
+# add container user and set stop signal
+RUN         useradd -m -d /home/container container
+STOPSIGNAL  SIGINT
 
-RUN         apt update --allow-unauthenticated \
-            && apt -y install --no-install-recommends \
+RUN         apt update \
+            && apt -y install \
                 ffmpeg \
                 iproute2 \
                 git \
@@ -26,22 +26,20 @@ RUN         apt update --allow-unauthenticated \
                 iputils-ping \
                 libnss3 \
                 tini \
-            && useradd -m -d /home/container container \
             && rm -rf /usr/bin/dd \
             && rm -rf /usr/bin/fallocate \
             && rm -rf /usr/bin/truncate \
             && rm -rf /usr/bin/xfs_mkfile \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            && apt-get clean \
+            && rm -rf /var/lib/apt/lists/*
 
-RUN         npm install npm@9.8.1 typescript ts-node @types/node --location=global
+RUN         npm install --global npm@latest typescript ts-node @types/node
 
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-STOPSIGNAL SIGINT
-
 COPY        --chown=container:container ./../entrypoint.sh /entrypoint.sh
 RUN         chmod +x /entrypoint.sh
-ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+ENTRYPOINT  ["/usr/bin/tini", "-g", "--"]
 CMD         ["/entrypoint.sh"]
