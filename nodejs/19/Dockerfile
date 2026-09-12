@@ -2,9 +2,12 @@ FROM        --platform=$TARGETOS/$TARGETARCH node:19-bullseye-slim
 
 LABEL       author="Embotic" maintainer="luke@embotic.xyz"
 
-# Fix QEMU ARM64 issues by using --no-install-recommends and avoiding problematic packages
+# add container user and set stop signal
+RUN         useradd -m -d /home/container container
+STOPSIGNAL  SIGINT
+
 RUN         apt update \
-            && apt install -y --no-install-recommends \
+            && apt -y install \
                 ffmpeg \
                 iproute2 \
                 git \
@@ -21,24 +24,27 @@ RUN         apt update \
                 build-essential \
                 libtool \
                 iputils-ping \
+                libnss3 \
                 tini \
-            && apt-get clean \
-            && rm -rf /var/lib/apt/lists/* \
-            && useradd -m -d /home/container container \
             && rm -rf /usr/bin/dd \
             && rm -rf /usr/bin/fallocate \
             && rm -rf /usr/bin/truncate \
-            && rm -rf /usr/bin/xfs_mkfile
+            && rm -rf /usr/bin/xfs_mkfile \
+            && apt-get clean \
+            && rm -rf /var/lib/apt/lists/*
 
-RUN         npm install npm@9.8.1 typescript ts-node @types/node --location=global
+RUN         npm install --global npm@9.x.x typescript ts-node @types/node
+
+# install pnpm
+RUN         npm install -g corepack
+RUN         corepack enable
+RUN         corepack prepare pnpm@latest --activate
 
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-STOPSIGNAL SIGINT
-
 COPY        --chown=container:container ./../entrypoint.sh /entrypoint.sh
 RUN         chmod +x /entrypoint.sh
-ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+ENTRYPOINT  ["/usr/bin/tini", "-g", "--"]
 CMD         ["/entrypoint.sh"]
